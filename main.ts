@@ -18,22 +18,28 @@ sprites.onOverlap(SpriteKind.Projectile, SpriteKind.Enemy, function (sprite, oth
     music.play(music.createSoundEffect(WaveShape.Sine, 515, 436, 230, 41, 297, SoundExpressionEffect.None, InterpolationCurve.Linear), music.PlaybackMode.InBackground)
 })
 sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSprite) {
-    if (is_dying == 0) {
-        music.play(music.melodyPlayable(music.bigCrash), music.PlaybackMode.UntilDone)
-        is_dying = 1
-        hero_dies()
-        scene.cameraShake(4, 300)
+    if (sprite.y < otherSprite.y - 8) {
+        sprites.destroy(otherSprite, effects.confetti, 200)
+        music.play(music.createSoundEffect(WaveShape.Sine, 515, 436, 230, 41, 297, SoundExpressionEffect.None, InterpolationCurve.Linear), music.PlaybackMode.InBackground)
+        mySprite.vy = 0.5 * jump_speed
+    } else {
+        if (is_dying == 0) {
+            music.play(music.melodyPlayable(music.bigCrash), music.PlaybackMode.UntilDone)
+            is_dying = 1
+            hero_dies()
+            scene.cameraShake(4, 300)
+        }
     }
 })
-let projectile: Sprite = null
 let last_moved = 0
 let baddy_list: Sprite[] = []
 let b1: Sprite = null
 let mySprite: Sprite = null
 let is_dying = 0
+let jump_speed = 0
 let gravity = 500
 let x_speed = 1.5
-let jump_speed = -225
+jump_speed = -200
 is_dying = 0
 mySprite = sprites.create(assets.image`hero`, SpriteKind.Player)
 mySprite.setPosition(16, 100)
@@ -240,29 +246,6 @@ game.onUpdate(function () {
                 false
                 )
                 music.play(music.melodyPlayable(music.footstep), music.PlaybackMode.InBackground)
-            })
-        }
-        if (controller.A.isPressed()) {
-            timer.throttle("pressed_fire", 150, function () {
-                projectile = sprites.createProjectileFromSprite(img`
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . 4 4 . . . . . . . 
-                    . . . . . . 4 5 5 4 . . . . . . 
-                    . . . . . . 2 5 5 2 . . . . . . 
-                    . . . . . . . 2 2 . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    . . . . . . . . . . . . . . . . 
-                    `, mySprite, projectile_vx, 0)
-                music.play(music.melodyPlayable(music.thump), music.PlaybackMode.InBackground)
             })
         }
         if (game.runtime() - last_moved > 1000) {
