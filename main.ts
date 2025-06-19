@@ -1,6 +1,36 @@
+namespace SpriteKind {
+    export const powerup_kind = SpriteKind.create()
+}
 function rand_sign () {
     return randint(0, 1) * 2 - 1
 }
+sprites.onOverlap(SpriteKind.Player, SpriteKind.powerup_kind, function (sprite, otherSprite) {
+    sprites.setDataString(sprite, "powerup", sprites.readDataString(otherSprite, "type"))
+    sprites.destroy(otherSprite, effects.bubbles, 500)
+    game.showLongText("You got a cannon! Press A to fire", DialogLayout.Bottom)
+    for (let index = 0; index < 4; index++) {
+        timer.after(150, function () {
+            projectile = sprites.createProjectileFromSprite(img`
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . 4 4 . . . . . . . 
+                . . . . . . 4 5 5 4 . . . . . . 
+                . . . . . . 2 5 5 2 . . . . . . 
+                . . . . . . . 2 2 . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                . . . . . . . . . . . . . . . . 
+                `, mySprite, projectile_vx, 0)
+        })
+    }
+})
 function hero_dies () {
     animation.runImageAnimation(
     mySprite,
@@ -32,8 +62,10 @@ sprites.onOverlap(SpriteKind.Player, SpriteKind.Enemy, function (sprite, otherSp
     }
 })
 let last_moved = 0
+let projectile: Sprite = null
 let baddy_list: Sprite[] = []
 let b1: Sprite = null
+let projectile_vx = 0
 let mySprite: Sprite = null
 let is_dying = 0
 let jump_speed = 0
@@ -44,10 +76,11 @@ is_dying = 0
 mySprite = sprites.create(assets.image`hero`, SpriteKind.Player)
 mySprite.setPosition(16, 100)
 mySprite.ay = gravity
+sprites.setDataString(mySprite, "powerup", "none")
 scene.cameraFollowSprite(mySprite)
 tiles.setCurrentTilemap(tilemap`level1`)
 let projectile_speed = 500
-let projectile_vx = projectile_speed
+projectile_vx = projectile_speed
 let baddy_speed = 20
 let b_count = 0
 for (let index = 0; index < 10; index++) {
@@ -75,6 +108,26 @@ for (let index = 0; index < 10; index++) {
     b_count += 1
     baddy_list.unshift(b1)
 }
+let powerup = sprites.create(img`
+    . . . . . . . . . . . . . . . . 
+    . . . . . . 4 4 4 4 . . . . . . 
+    . . . . 4 4 4 5 5 4 4 4 . . . . 
+    . . . 3 3 3 3 4 4 4 4 4 4 . . . 
+    . . 4 3 3 3 3 2 2 2 1 1 4 4 . . 
+    . . 3 3 3 3 3 2 2 2 1 1 5 4 . . 
+    . 4 3 3 3 3 2 2 2 2 2 5 5 4 4 . 
+    . 4 3 3 3 2 2 2 4 4 4 4 5 4 4 . 
+    . 4 4 3 3 2 2 4 4 4 4 4 4 4 4 . 
+    . 4 2 3 3 2 2 4 4 4 4 4 4 4 4 . 
+    . . 4 2 3 3 2 4 4 4 4 4 2 4 . . 
+    . . 4 2 2 3 2 2 4 4 4 2 4 4 . . 
+    . . . 4 2 2 2 2 2 2 2 2 4 . . . 
+    . . . . 4 4 2 2 2 2 4 4 . . . . 
+    . . . . . . 4 4 4 4 . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    `, SpriteKind.powerup_kind)
+powerup.setPosition(624, 216)
+sprites.setDataString(powerup, "type", "cannon")
 game.onUpdate(function () {
     if (is_dying == 0) {
         if (controller.up.isPressed()) {
@@ -250,6 +303,31 @@ game.onUpdate(function () {
         }
         if (game.runtime() - last_moved > 1000) {
             mySprite.setImage(assets.image`hero`)
+        }
+        if (controller.A.isPressed()) {
+            if (sprites.readDataString(mySprite, "powerup") == "cannon") {
+                timer.throttle("pressed_fire", 150, function () {
+                    projectile = sprites.createProjectileFromSprite(img`
+                        . . . . . . . . . . . . . . . . 
+                        . . . . . . . . . . . . . . . . 
+                        . . . . . . . . . . . . . . . . 
+                        . . . . . . . . . . . . . . . . 
+                        . . . . . . . . . . . . . . . . 
+                        . . . . . . . . . . . . . . . . 
+                        . . . . . . . 4 4 . . . . . . . 
+                        . . . . . . 4 5 5 4 . . . . . . 
+                        . . . . . . 2 5 5 2 . . . . . . 
+                        . . . . . . . 2 2 . . . . . . . 
+                        . . . . . . . . . . . . . . . . 
+                        . . . . . . . . . . . . . . . . 
+                        . . . . . . . . . . . . . . . . 
+                        . . . . . . . . . . . . . . . . 
+                        . . . . . . . . . . . . . . . . 
+                        . . . . . . . . . . . . . . . . 
+                        `, mySprite, projectile_vx, 0)
+                    music.play(music.melodyPlayable(music.thump), music.PlaybackMode.InBackground)
+                })
+            }
         }
     }
 })
