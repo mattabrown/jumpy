@@ -7,6 +7,7 @@ function rand_sign () {
 sprites.onOverlap(SpriteKind.Player, SpriteKind.powerup_kind, function (sprite, otherSprite) {
     sprites.setDataString(sprite, "powerup", sprites.readDataString(otherSprite, "type"))
     sprites.destroy(otherSprite, effects.bubbles, 500)
+    music.play(music.melodyPlayable(music.baDing), music.PlaybackMode.InBackground)
     game.showLongText("You got a cannon! Press A to fire", DialogLayout.Bottom)
     for (let index = 0; index < 4; index++) {
         timer.after(150, function () {
@@ -83,7 +84,7 @@ let projectile_speed = 500
 projectile_vx = projectile_speed
 let baddy_speed = 20
 let b_count = 0
-for (let index = 0; index < 10; index++) {
+for (let index = 0; index < 16; index++) {
     b1 = sprites.create(img`
         . . . . 2 2 2 2 2 e . . . . . . 
         . . . 2 2 2 2 d 2 2 e . . . . . 
@@ -102,7 +103,7 @@ for (let index = 0; index < 10; index++) {
         . . e e e f f f . . . . . . . . 
         . . e e e e f f f . . . . . . . 
         `, SpriteKind.Enemy)
-    b1.setPosition(randint(48, 800), randint(0, 200))
+    b1.setPosition(randint(48, 900), randint(0, 200))
     b1.vx = rand_sign() * baddy_speed
     sprites.setDataString(b1, "id", convertToText(b_count))
     b_count += 1
@@ -502,5 +503,10 @@ game.onUpdate(function () {
                 )
             })
         }
+    }
+})
+game.onUpdate(function () {
+    if (mySprite.x > 1000) {
+        game.gameOver(true)
     }
 })
